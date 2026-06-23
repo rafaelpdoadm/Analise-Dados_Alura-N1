@@ -15,4 +15,3 @@ from HistoricoEmprego
 where datatermino ISNULL
 order by salario DESC
 limit 5;
-
