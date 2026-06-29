@@ -34,3 +34,41 @@ FROM vendas
 WHERE Mes = '01' OR Mes = '11' OR Mes = '12'
 GROUP BY Ano, Mes
 ORDER BY Ano;
+
+-- papel dos fornecedores na black friday --
+SELECT strftime('%Y/%m', v.data_venda) AS 'Ano/Mês', f.nome AS Nome_Fornecedor, COUNT(iv.produto_id) AS Qtd_vendas
+FROM itens_venda iv
+JOIN vendas v
+ON v.id_venda = iv.venda_id
+INNER JOIN produtos p
+ON p.id_produto = iv.produto_id
+INNER JOIN fornecedores f
+ON f.id_fornecedor = p.fornecedor_id
+GROUP BY Nome_Fornecedor, "Ano/Mês"
+ORDER BY Nome_Fornecedor;
+
+-- categorias de produtos na black friday --
+SELECT strftime('%Y', v.data_venda) AS 'Ano', c.nome_categoria AS Nome_Categoria, COUNT(iv.produto_id) AS Qtd_Vendas
+FROM itens_venda iv
+INNER JOIN vendas v
+ON v.id_venda = iv.venda_id
+INNER JOIN produtos p
+ON p.id_produto = iv.produto_id
+INNER JOIN categorias c
+ON c.id_categoria = p.categoria_id
+WHERE strftime('%m', v.data_venda) = '11'
+GROUP BY Nome_Categoria, "Ano"
+ORDER BY "Ano", Qtd_Vendas DESC;
+
+-- qual fornecedor teve o pior desempenho na ultima black friday --
+SELECT strftime('%Y/%m', v.data_venda) AS 'Ano/Mês', COUNT(iv.produto_id) AS Qtd_vendas
+FROM itens_venda iv
+JOIN vendas v
+ON v.id_venda = iv.venda_id
+INNER JOIN produtos p
+ON p.id_produto = iv.produto_id
+INNER JOIN fornecedores f
+ON f.id_fornecedor = p.fornecedor_id
+WHERE f.nome = 'NebulaNetworks'
+GROUP BY f.nome, "Ano/Mês"
+ORDER BY "Ano/Mês", Qtd_Vendas;
