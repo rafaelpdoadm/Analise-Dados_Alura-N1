@@ -52,3 +52,35 @@ SELECT FormatandoCPF(1) AS CPF;
 SELECT TRIM(nome), FormatandoCPF(1) AS CPF
 FROM clientes
 WHERE cliente_id = 1;
+
+-- foi solicitada a criacao de uma funcao que retornasse, quando pedido, o valor pago por cada diaria do hospede
+DELIMITER $$
+
+CREATE FUNCTION InfoAluguel(IdAluguel INT)
+RETURNS VARCHAR(255) DETERMINISTIC
+BEGIN
+
+DECLARE NomeCliente VARCHAR(100);
+DECLARE PrecoTotal DECIMAL(10,2);
+DECLARE Dias INT;
+DECLARE ValorDiaria DECIMAL(10,2);
+DECLARE Resultado VARCHAR(255);
+
+SELECT c.nome, a.preco_total, DATEDIFF(data_fim, data_inicio)
+INTO NomeCliente, PrecoTotal, Dias
+FROM alugueis a
+INNER JOIN clientes c
+ON a.cliente_id = c.cliente_id
+WHERE a.aluguel_id = IdAluguel;
+
+SET ValorDiaria = PrecoTotal / Dias;
+
+SET Resultado = CONCAT('Nome: ', NomeCliente, ', Valor Diário: R$', FORMAT(ValorDiaria,2));
+
+RETURN Resultado;
+
+END $$
+
+DELIMITER ;
+
+SELECT InfoAluguel(1)
