@@ -15,5 +15,6 @@
             "username": "root",
             "password": "aIm&udeus1"
         }
-    ]
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
