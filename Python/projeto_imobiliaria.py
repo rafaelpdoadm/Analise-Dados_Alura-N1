@@ -83,3 +83,51 @@ df.head()
 df.Tipo.unique()
 df.drop('Tipo', axis=1, inplace=True)
 
+# a partir disso, foi necessária a seguinte análise:
+# apartamentos que possuem 1 quarto e aluguel menor do que R$ 1200
+# apartamentos que possuem pelo menos 2 quartos, aluguel menor do que R$ 3000 e área maior do que 70m²
+df['Quartos'] == 1
+selecao1=df['Quartos']==1
+df[selecao1]
+
+selecao2 = df['Valor'] < 1200
+df[selecao2]
+
+selecao_final = (selecao1) & (selecao2)
+df[selecao_final]
+
+# apartamentos que possuem pelo menos 2 quartos, aluguel menor do que R$ 3000 e área maior do que 70m²
+selecao =(df['Quartos'] >= 2) & (df['Valor'] < 3000) & (df['Area'] >70)
+df[selecao]
+
+# após todas as análises, transformei os dados para um arquivo .csv
+df.to_csv('dados_apartamentos.csv')
+# conferindo se tudo deu certo
+pd.read_csv('dados_apartamentos.csv')
+# tirando colunas indesejadas e ajustando o separador dos dados
+df.to_csv('dados_apartamentos.csv', index=False)
+df.to_csv('dados_apartamentos.csv', index=False, sep=';')
+
+# após as etapas anteriores se fez necessária a criação de colunas numéricas
+# 1- deve contar os gastos mensais de cada imóvel, incluindo aluguel e condomínio
+# 2- deve conter os gastos anuais por imóvel, ou seja, IPTU mais 12 meses de aluguel e condomínio
+url = 'https://raw.githubusercontent.com/alura-cursos/pandas-conhecendo-a-biblioteca/main/base-de-dados/aluguel.csv'
+dados = pd.read_csv(url, sep=';')
+dados.head()
+
+dados['Valor_mes'] = dados['Valor'] + dados['Condominio']
+dados.head()
+
+dados['Valor_ano'] = dados['Valor_mes'] * 12+ dados['IPTU']
+dados.head()
+
+# por fim, se fez necessária a criação de colunas categóricas
+# descrição: a coluna deve possuir uma sumarização das principais informações dos imóveis que serão apresentadas no site: tipo de imóvel, bairro, quantidade de quartos e vagas de garagem
+# possui_suite: essa deve ser uma coluna que informe apenas se o imóvel possui ou não suites, sem se importar com a quantidade
+dados['Descricao'] = dados['Tipo'] + ' em ' + dados['Bairro'] + ' com ' + dados['Quartos'].astype(str) + ' quarto(s) ' + ' e ' + dados['Vagas'].astype(str) + ' vaga(s) de garagem.'
+dados.head()
+
+dados['Possui_suite'] = dados['Suites'].apply(lambda x: "Sim" if x > 0 else "Não")
+dados.head()
+
+dados.to_csv('dados_completos.csv', index=False, sep=';')
