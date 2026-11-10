@@ -98,3 +98,83 @@ resultado
 ticket_medio = round(pd.crosstab(df['sexo_biologico'], df['regiao_cliente'], values=df['total_compra'], aggfunc='mean'), 2)
 ticket_medio
 
+# quarta demanda:
+# uma das formas de melhorar a experiência do cliente é por meio da redução do tempo de entrega.
+# com isso, teremos que calcula a média de tempo de entrega de cada produto, com base no histórico que possuimos.
+# com isso poderemos entender quais produtos demoram mais para serem entregues e podemos tomar ações para evitar problemas nas entregas
+
+media_entrega = df.tempo_entrega.mean()
+media_entrega # média de tempo de entrega de todos os produtos
+
+media_entrega_cat = df.groupby('categoria_produto')['tempo_entrega'].mean().reset_index().round(1)
+media_entrega_cat
+
+media_entrega_cat.columns = ['categoria_produto', 'media_tempo']
+media_entrega_cat = media_entrega_cat.sort_values(by='media_tempo', ascending=False)
+media_entrega_cat
+
+# criando o gráfico de barras com o seaborn
+plt.figure(figsize=(8, 6))
+sns.barplot(data=media_entrega_cat, x='media_tempo', y='categoria_produto')
+plt.axvline(media_entrega, color='red')
+plt.xlabel=('Tempo de Entrega')
+pltylabel=('Categoria de Produto')
+plt.show()
+
+# quinta demanda:
+# investigar o comportamento dos consumidores na região nordeste, devido ao crescimento significativo nas vendas de eletrônicos
+dados_nordeste = df[(df['regiao_cliente'] == 'Nordeste') & (df['categoria_produto'] == 'Eletrônicos')]
+dados_nordeste = dados_nordeste.sort_values('total_compra')
+dados_nordeste
+
+n = len(dados_nordeste)
+n
+
+# calculando o elemento mediano
+elemento_md = int(n / 2)
+elemento_md
+
+# calculando a mediana
+round((dados_nordeste['total_compra'].iloc[elemento_md - 1] + dados_nordeste['total_compra'].iloc[elemento_md]) / 2,2)
+
+# outra forma de calcular a mediana
+dados_nordeste.total_compra.median()
+
+# plotando um gráfico de histograma para avaliar a distribuição das frequências
+sns.histplot(dados_nordeste.total_compra, bins=30)
+plt.show()
+
+# sexta demanda:
+# para uma campanha de compre x leve y produtos, precisamos identificar os livros mais comprados (moda) pelos clientes
+df['regiao_cliente'].value_counts()
+dados_filtrados = df[df['categoria_produto'] == 'Livros']
+dados_filtrados.head()
+
+moda = dados_filtrados.quantidade.mode()
+moda
+
+# sétima demanda: 
+# entendendo a relação entre a nota 5 (Ótimo) e o provável baixo tempo de entrega
+# para essa resolução serão utilizados os conceitos de média, mediana e moda
+sns.histplot(bins=21, data=df, x='tempo_entrega', kde=True, kde_kws={'bw_adjust':2})
+plt.show()
+
+tempo_entrega_resumo = {
+    'media': df['tempo_entrega'].mean(),
+    'mediana': df['tempo_entrega'].median(),
+    'moda': df['tempo_entrega'].mode()[0]
+}
+tempo_entrega_resumo
+
+dados_nota_5= df[df['avaliacao'] == 5]
+dados_nota_5.head()
+
+sns.histplot(bins=21, data=dados_nota_5, x='tempo_entrega', kde=True, kde_kws={'bw_adjust':2})
+plt.show()
+
+resumo = {
+    'media': dados_nota_5['tempo_entrega'].mean(),
+    'mediana': dados_nota_5['tempo_entrega'].median(),
+    'moda': dados_nota_5['tempo_entrega'].mode()[0]
+}
+
