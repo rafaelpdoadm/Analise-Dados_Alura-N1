@@ -178,3 +178,192 @@ resumo = {
     'moda': dados_nota_5['tempo_entrega'].mode()[0]
 }
 
+# continuando as aulas, agora será explorada outra db
+url = 'https://raw.githubusercontent.com/alura-cursos/Estatisticas-Python-frequencias-medidas/refs/heads/main/dados/colaboradores.csv'
+colaboradores = pd.read_csv(url)
+
+# a partir disso, temos a oitava demanda a ser resolvida
+# precisamos agora investigara distribuição dos salários dos colaboradores e identificar as faixas salariais de cada um deles.
+# precisamos verificar também a concentração em determinados intervalos de salário.
+# devemos então criar uma distribuição de frequências com base em classes de salários
+n = len(colaboradores)
+n
+
+import math
+
+k = 1 + (10/3) * math.log10(n)
+k
+
+k = int(k)
+k
+# com os códigos acima, chegou-se a conclusão de que serão necessárias 14 faixas salariais para responder a demanda.
+# com isso, iniciamos a criação das faixas para alocar cada funcionário em sua respectiva
+faixas = colaboradores.copy()
+faixas
+
+faixas['faixa_salarial'] = pd.cut(faixas['remuneracao'], bins = int(k), include_lowest = True)
+faixas
+
+# com as faixas salariais feitas, será construida agora a distribuição de frequências para a demanda
+tabela_frequencias = faixas.groupby('faixa_salarial', observed = False).size().reset_index(name='frequencia')
+tabela_frequencias['porcentagem'] = (tabela_frequencias['frequencia'] / len(colaboradores)) * 100
+tabela_frequencias
+
+# construindo o histograma
+plt.figure(figsize=(15, 6))
+sns.histplot(data=faixas, x='remuneracao')
+plt.show()
+
+sns.histplot(bins = int(k), data = colaboradores, x = 'remuneracao', kde = True)
+plt.show()
+
+# nona demanda:
+# devemos buscar entender agora a distribuição de salários dentro das faixas específicas
+# há um interesse em identificar faixas salariais e entender a remuneração das pessoas coordenadoras e se estão dentro dos 99% maiores salários da Empresa
+# para essa demanda, será utilizada a lógica de medidas separatrizes (quartis, decis e percentis)
+quartis = {
+    'Q1' : colaboradores['remuneracao'].quantile(0.25),
+    'Q2' : colaboradores['remuneracao'].quantile(0.50),
+    'Q3' : colaboradores['remuneracao'].quantile(0.75),
+}
+quartis
+
+# visualizando os quartis no histograma
+plt.figure(figsize=(15, 6))
+sns.histplot(binwidth = 500, data = colaboradores, x = 'remuneracao')
+plt.axvline(quartis['Q1'], color = 'red', linestyle = 'dashed')
+plt.axvline(quartis['Q2'], color = 'red', linestyle = 'dashed')
+plt.axvline(quartis['Q3'], color = 'red', linestyle = 'dashed')
+plt.show()
+
+# realizando a análise específica solicitada para o cargo de coordenador
+percentil_99 = colaboradores['remuneracao'].quantile(0.99)
+percentil_99
+
+coordenadores = colaboradores[colaboradores['cargo'] == 'Coordenador(a)']
+num_coordenadores = len(coordenadores)
+num_coordenadores
+
+coordenadores_alta_remuneracao = colaboradores[(colaboradores['cargo'] == 'Coordenador(a)') & (colaboradores['remuneracao'] > percentil_99)]
+num_coordenadores_alta_remuneracao = len(coordenadores_alta_remuneracao)
+num_coordenadores_alta_remuneracao
+# comprovação que as pessoas coordenadoras estão dentro dos 99% maiores salários da Empresa
+
+# décima demanda:
+# devemos investigar agora o grupo dos 20% colaboradores mais jovens da empresa
+plt.figure(figsize=(15, 6))
+sns.histplot(data = colaboradores, x = 'idade', bins = 10, cumulative = True, stat = 'proportion', kde = True)
+plt.axhline(0.20, color = 'red', linestyle = 'dashed')
+plt.show()
+
+idades_classificacao = colaboradores.copy()
+idades_classificacao.head()
+
+idades_classificacao = idades_classificacao.sort_values(by = 'idade')
+idades_classificacao['cumulativo'] = (idades_classificacao.reset_index().index + 1) / len(idades_classificacao)
+idades_classificacao['qualificado'] = idades_classificacao['cumulativo'] <= 0.20
+idades_classificacao
+
+idades_qualificados = idades_classificacao[idades_classificacao['qualificado'] == True]
+idades_qualificados
+
+len(idades_qualificados)
+
+# décima primeira demanda:
+# devemos realizar uma análise de remuneração dos colaboradores por sexo
+plt.figure(figsize=(8, 6))
+sns.boxplot(x=colaboradores['remuneracao'], color = 'steelblue')
+plt.title('Boxplot de Salários')
+plt.xlabel('Salário(R$)')
+plt.ylim(-1, 1)
+plt.show()
+
+colaboradores['remuneracao'].describe()
+
+plt.figure(figsize=(8, 6))
+ax = sns.boxplot(x='remuneracao', y = 'sexo_biologico', data = colaboradores, hue = 'sexo_biologico')
+plt.title('Boxplot de Salários por Sexo')
+plt.xlabel('Salário(R$)')
+plt.ylabel('Sexo')
+plt.show()
+
+# melhorando a visualização para facilitar a análise
+colaboradores_filtrados = colaboradores[colaboradores['remuneracao'] <= 10e3]
+colaboradores_filtrados.head()
+
+plt.figure(figsize=(8, 6))
+ax = sns.boxplot(x = 'remuneracao', y = 'sexo_biologico', data = colaboradores_filtrados, hue = 'sexo_biologico')
+plt.title('Boxplot de Salários por Sexo')
+plt.xlabel('Salário(R$)')
+plt.ylabel('Sexo')
+plt.show()
+
+# realizando estatísticas descritivas para cada grupo para facilitar ainda mais essa análise
+estat_remuneracao = colaboradores.groupby('sexo_biologico')['remuneracao'].agg(
+    Q1 = lambda x: x.quantile(0.25),
+    mediana = 'median',
+    media = 'mean',
+    Q3 = lambda x: x.quantile(0.75),
+    IIQ = lambda x: x.quantile(0.75) - x.quantile(0.25)
+).reset_index()
+estat_remuneracao
+
+# décima segunda demanda:
+# devemos investigar os salários do setor comercial, nos cargos de Inteligência comercial e Consultor(a) de vendas
+comercial = colaboradores[colaboradores['cargo'].isin(['Inteligência comercial', 'Consultor(a) de vendas'])]
+comercial
+
+comercial.groupby('cargo')['remuneracao'].describe()[['mean', '50%']]
+
+import numpy as np
+np.random.seed(42)
+amostra = comercial.sample(n=10)
+amostra
+
+plt.stem(amostra['remuneracao'], bottom = amostra['remuneracao'].mean())
+plt.axhline(y = amostra['remuneracao'].mean(), color = 'red')
+plt.show()
+
+estat_colab = comercial.groupby('cargo')['remuneracao'].agg(
+    media = 'mean',
+    mediana = 'median',
+    mad = lambda x: (abs(x - x.mean())).mean()
+).reset_index()
+estat_colab
+
+plt.figure(figsize=(8, 6))
+sns.boxplot(x = 'remuneracao', y = 'cargo', data = comercial)
+plt.title('Distribuição de Salários por Cargo')
+plt.xlabel('Salário(R$)')
+plt.show()
+
+# última demanda:
+# investigar as diferenças salariais dos cargos de estoquista e repositor
+# esses cargos representam o meio numero de funcionários da amostra
+# vamos investigar as faixas salariais, determinar quais deles tem maior inconsistencia salarial e identificar desigualdades nas politicas salariais
+operacional = colaboradores[colaboradores['cargo'].isin(['Estoquista', 'Repositor(a)'])]
+operacional 
+
+operacional.groupby('cargo')['remuneracao'].describe()[['mean', '50%']]
+
+estatisticas_operacional = operacional.groupby('cargo')['remuneracao'].agg(
+    media = 'mean',
+    mediana = 'median',
+    variancia = 'var',
+).reset_index()
+estatisticas_operacional
+
+estatisticas_operacional = operacional.groupby('cargo')['remuneracao'].agg(
+    media = 'mean',
+    mediana = 'median',
+    variancia = 'var',
+    desvio_padrao = 'std',
+    mad = lambda x: (abs(x - x.mean())).mean()
+).reset_index()
+estatisticas_operacional
+
+plt.figure(figsize=(8, 6))
+sns.violinplot(x='remuneracao', y='cargo', data=operacional)
+plt.title('Distribuição de Salários por Cargo')
+plt.xlabel('Salário(R$)')
+plt.show()
