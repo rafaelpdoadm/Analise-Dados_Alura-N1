@@ -51,3 +51,25 @@ plt.show()
 
 # coletando dados para interpretar os gráficos
 dados_brasil.describe()
+
+# criando subplots para analisar comparativamente os dados do Brasil, Argentina, Colômbia e Peru
+fig, axs = plt.subplots(2, 2, figsize=(10, 6))
+fig.subplots_adjust(hspace=0.5, wspace=0.3)
+fig.suptitle('Imigração dos quatro maiores países da América do Sul para o Canadá de 1980 a 2013')
+axs[0,0].plot(df.loc['Brasil', anos])
+axs[0,0].set_title('Brasil')
+axs[0,1].plot(df.loc['Colômbia', anos])
+axs[0,1].set_title('Colômbia')
+axs[1,0].plot(df.loc['Argentina', anos])
+axs[1,0].set_title('Argentina')
+axs[1,1].plot(df.loc['Peru', anos])
+axs[1,1].set_title('Peru')
+for ax in axs.flat:
+  ax.xaxis.set_major_locator(plt.MultipleLocator(5))
+  ax.set_xlabel('Ano')
+  ax.set_ylabel('Número de imigrantes')
+ymin=0
+ymax=7000
+for ax in axs.ravel():
+  ax.set_ylim(ymin, ymax)
+plt.show()
