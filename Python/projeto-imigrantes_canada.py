@@ -153,3 +153,38 @@ sns.set_theme(style='whitegrid')
 sns.set_theme(style='white')
 sns.set_theme(style='ticks')
 # mais temas e paletas podem ser encontradas na documentação da biblioteca
+
+# criando gráficos interativos
+import plotly.express as px
+
+fig = px.line(dados_brasil, x='ano', y='imigrantes', title='Imigração do Brasil para o Canadá no período de 1980 a 2013')
+fig.update_traces(line_color='green', line_width=4)
+fig.update_layout(width=1000, height=500, 
+                  xaxis={'tickangle':-45}, 
+                  font_family='Arial', 
+                  font_size=14, 
+                  font_color='grey', 
+                  title_font_color='black', 
+                  title_font_size=22, 
+                  xaxis_title='Ano', 
+                  yaxis_title='Número de imigrantes')
+fig.show()
+
+# construindo um gráfico com diversas linhas para podermos modificá-las
+# puxando um df que utilizamos anteriormente
+df.head()
+america_sul = df.query('Região == "América do Sul"')
+america_sul
+df_america_sul_clean = america_sul.drop(['Continente', 'Região', 'Total'], axis=1)
+america_sul_final = df_america_sul_clean.T
+
+fig = px.line(america_sul_final, x=america_sul_final.index, y=america_sul_final.columns, color='País',
+              title='Imigração dos países da América do Sul para o Canadá de 1980 a 2013', markers=True)
+fig.update_layout(
+    xaxis={'tickangle': -45},
+    xaxis_title='Ano',
+    yaxis_title='Número de imigrantes'
+)
+fig.show()
+
+# salvando o gráfico em formato HTML para facilitar o compartilhamento
