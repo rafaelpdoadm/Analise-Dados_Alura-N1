@@ -73,3 +73,83 @@ ymax=7000
 for ax in axs.ravel():
   ax.set_ylim(ymin, ymax)
 plt.show()
+
+# repetindo um gráfico e iniciando a modificação de cores daslinhas dele
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(dados_brasil['ano'], dados_brasil['imigrantes'], lw=3, color='g')
+ax.set_title('Imigração do Brasil para o Canadá\n1980 a 2013', fontsize=18, loc='left')
+ax.set_xlabel('Ano', fontsize=14)
+ax.set_ylabel('Número de imigrantes', fontsize=14)
+ax.xaxis.set_tick_params(labelsize=12)
+ax.yaxis.set_tick_params(labelsize=12)
+ax.xaxis.set_major_locator(plt.MultipleLocator(5))
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+fig.savefig('Imigracao_brasil_canada.png', transparent=False, dpi=300, bbox_inches='tight')
+plt.show()
+
+# explorando os dados e gráficos de toda a américa do sul
+df.head()
+america_sul = df.query('Região == "América do Sul"')
+america_sul
+
+america_sul_sorted = america_sul.sort_values('Total', ascending=True)
+
+cores = []
+for pais in america_sul_sorted.index:
+    if pais == 'Brasil':
+        cores.append('green')
+    else:
+        cores.append('silver')
+fig, ax = plt.subplots(figsize=(12, 5))
+ax.barh(america_sul_sorted.index, america_sul_sorted['Total'], color=cores)
+ax.set_title('América do Sul: Brasil foi o quarto país com mais imigrantes\npara o Canadá no período de 1980 a 2013', loc='left', fontsize=18)
+ax.set_ylabel('')
+ax.set_xlabel('Número de imigrantes', fontsize=14)
+ax.xaxis.set_tick_params(labelsize=12)
+ax.yaxis.set_tick_params(labelsize=12)
+for i, v in enumerate(america_sul_sorted['Total']):
+    ax.text(v + 20, i, str(v), color = 'black', fontsize = 10, ha = 'left', va = 'center')
+ax.set_frame_on(False)
+ax.get_xaxis().set_visible(False)
+ax.tick_params(axis='both', which='both', length=0)
+plt.show()
+
+# explorando o uso a biblioteca seaborn para mais opções de configuração dos gráficos
+import seaborn as sns
+sns.set_theme()
+
+# criando um gráfico com a biblioteca investigando os top 10 países que mais imigraram para o Canadá
+top_10 = df.sort_values('Total', ascending = False).head(10)
+sns.barplot(data = top_10, y=top_10.index, x='Total', orient='h')
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax = sns.barplot(data=top_10, y=top_10.index, x='Total', orient='h')
+ax.set_title('Países com maior imigração para o Canadá\n1980 a 2013',
+        loc='left',
+        fontsize=16)
+ax.set_xlabel('Número de imigrantes', fontsize=14)
+ax.set_ylabel('')
+plt.show()
+
+# utilizando as paletas de cores 
+def gerar_grafico_paleta(palette):
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax = sns.barplot(data=top_10, y=top_10.index, x='Total', orient='h', palette=palette)
+    ax.set_title('Países com maior imigração para o Canadá\n1980 a 2013', loc='left', fontsize=18)
+    ax.set_xlabel('Número de imigrantes', fontsize=14)
+    ax.set_ylabel('')
+    plt.show()
+
+# tipos de paleta
+gerar_grafico_paleta('Blues_r')
+gerar_grafico_paleta('rocket')
+gerar_grafico_paleta('coolwarm')
+gerar_grafico_paleta('tab10')
+
+# tipos de tema
+sns.set_theme(style='dark')
+sns.set_theme(style='whitegrid')
+sns.set_theme(style='white')
+sns.set_theme(style='ticks')
+# mais temas e paletas podem ser encontradas na documentação da biblioteca
