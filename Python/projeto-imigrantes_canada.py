@@ -188,3 +188,4 @@ fig.update_layout(
 fig.show()
 
 # salvando o gráfico em formato HTML para facilitar o compartilhamento
+fig.write_html('imigracao_america_sul.html')
